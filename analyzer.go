@@ -92,7 +92,7 @@ func (a *Analyzer) getBlockWithTxs(ctx context.Context, blockNum uint64) (*rpcBl
 		JSONRPC: "2.0",
 		ID:      time.Now().UnixNano(),
 		Method:  "eth_getBlockByNumber",
-		Params:  []interface{}{hexNum, true}, // full txs
+		Params:  []any{hexNum, true}, // full txs
 	}
 	reqBody, _ := json.Marshal(reqObj)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, a.alchURL, strings.NewReader(string(reqBody)))
@@ -154,7 +154,7 @@ func (a *Analyzer) GetBlockGasAndTips(ctx context.Context, blockNum uint64) (tim
 		timestamp = time.Unix(tsInt, 0)
 		return timestamp, gasUsed, totalTips
 	}
-	if err != nil && err != sql.ErrNoRows {
+	if err != sql.ErrNoRows {
 		// If context cancelled or other error
 		if ctx.Err() != nil {
 			return time.Time{}, nil, nil
@@ -170,6 +170,7 @@ func (a *Analyzer) GetBlockGasAndTips(ctx context.Context, blockNum uint64) (tim
 		if err != nil {
 			fmt.Printf("Error fetching block %d: %v\n", blockNum, err)
 			time.Sleep(time.Second * time.Duration(2<<numRetried)) // Exponential backoff
+			continue
 		}
 
 		gasUsed = a.getBlockGasUsed(block)
@@ -181,7 +182,7 @@ func (a *Analyzer) GetBlockGasAndTips(ctx context.Context, blockNum uint64) (tim
 		timestamp = time.Unix(tsInt, 0)
 
 		// Save to cache
-		_, err = a.db.Exec("INSERT OR REPLACE INTO block_cache (block_num, timestamp, gas_used, total_tips) VALUES (?, ?, ?)",
+		_, err = a.db.Exec("INSERT OR REPLACE INTO block_cache (block_num, timestamp, gas_used, total_tips) VALUES (?, ?, ?, ?)",
 			blockNum, tsInt, block.GasUsed, fmt.Sprintf("0x%x", totalTips))
 		if err != nil {
 			fmt.Printf("Cache insert error: %v\n", err)
