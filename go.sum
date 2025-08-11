@@ -1,0 +1,8 @@
+github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/longlodw/lazyiterate v0.0.0-20250810231102-bfdbe1c491d3 h1:QVgGOjKcb7jrqkaJTt210TD4okHCNEFjeIy+cRfOiXs=
+github.com/longlodw/lazyiterate v0.0.0-20250810231102-bfdbe1c491d3/go.mod h1:bZT6z/xjg2z1XaTZz7+pEcaiK/3iNBej02yteZ4Lqfs=
+github.com/mattn/go-sqlite3 v1.14.30 h1:bVreufq3EAIG1Quvws73du3/QgdeZ3myglJlrzSYYCY=
+github.com/mattn/go-sqlite3 v1.14.30/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
+golang.org/x/time v0.12.0 h1:ScB/8o8olJvc+CQPWrK3fPZNfh7qgwCrY0zJmoEQLSE=
+golang.org/x/time v0.12.0/go.mod h1:CDIdPxbZBQxdj6cxyCIdrNogrJKMJ7pr37NYpMcMDSg=

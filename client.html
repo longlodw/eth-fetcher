@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Ethereum Fetcher Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f4f6f8;
+      color: #333;
+    }
+
+    h1 {
+      color: #222;
+      margin-bottom: 10px;
+    }
+
+    section {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input {
+      margin: 5px;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      margin: 5px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    th {
+      background: #007bff;
+      color: white;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px 10px;
+      text-align: center;
+    }
+
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+
+    tr:hover {
+      background: #f1f1f1;
+    }
+
+    /* Spinner styling */
+    .spinner {
+      display: none;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Ethereum Fetcher Dashboard</h1>
+
+  <section>
+    <label>Server Address:
+      <input id="serverAddr" type="text" value="http://localhost:8080" size="40">
+    </label>
+  </section>
+
+  <section>
+    <h2>Submit Job</h2>
+    <input id="start" type="number" placeholder="Start block">
+    <input id="end" type="number" placeholder="End block">
+    <button id="submitBtn" onclick="submitJob()">Submit</button>
+    <div id="submitSpinner" class="spinner"></div>
+  </section>
+
+  <section>
+    <h2>Jobs</h2>
+    <button onclick="loadJobs()">Refresh Job List</button>
+    <div id="jobsSpinner" class="spinner"></div>
+    <table id="jobsTable">
+      <thead>
+        <tr>
+          <th>Job ID</th>
+          <th>Status</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Last Written</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <script>
+    function getBase() {
+      return document.getElementById('serverAddr').value.trim().replace(/\/+$/, '');
+    }
+
+    function showSpinner(spinnerId, show) {
+      document.getElementById(spinnerId).style.display = show ? 'inline-block' : 'none';
+    }
+
+    function submitJob() {
+      const start = document.getElementById('start').value;
+      const end = document.getElementById('end').value;
+      if (!start || !end) {
+        alert("Please provide start and end blocks");
+        return;
+      }
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      showSpinner('submitSpinner', true);
+      fetch(`${getBase()}/request?start=${start}&end=${end}`, {method: 'POST'})
+        .then(r => r.json())
+        .then(data => {
+          alert('Job submitted: ' + data.jobID);
+          loadJobs(); // auto refresh after submission
+        })
+        .catch(err => alert(err))
+        .finally(() => {
+          btn.disabled = false;
+          showSpinner('submitSpinner', false);
+        });
+    }
+
+    function loadJobs() {
+      showSpinner('jobsSpinner', true);
+      fetch(`${getBase()}/jobs`)
+        .then(r => r.json())
+        .then(ids => {
+          const tbody = document.querySelector('#jobsTable tbody');
+          tbody.innerHTML = '';
+          const promises = ids.map(id => {
+            return fetch(`${getBase()}/status/${id}`)
+              .then(r => r.json())
+              .then(job => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${id}</td>
+              <td>${job.status}</td>
+              <td>${job.start}</td>
+              <td>${job.end}</td>
+              <td>${job.lastWritten || ''}</td>
+              <td>
+                <button onclick="stopJob('${id}')">Stop</button>
+                <button onclick="downloadJob('${id}')">Download</button>
+              </td>`;
+                tbody.appendChild(tr);
+              });
+          });
+          return Promise.all(promises);
+        })
+        .catch(err => alert(err))
+        .finally(() => {
+          showSpinner('jobsSpinner', false);
+        });
+    }
+
+    function stopJob(id) {
+      fetch(`${getBase()}/stop/${id}`).then(() => loadJobs());
+    }
+
+    function downloadJob(id) {
+      window.location = `${getBase()}/download/${id}`;
+    }
+
+    loadJobs();
+  </script>
+</body>
+
+</html>
