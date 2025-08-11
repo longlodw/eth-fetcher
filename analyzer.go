@@ -20,10 +20,10 @@ import (
 
 // JSON-RPC request/response structures
 type jsonRPCRequest struct {
-	JSONRPC string      `json:"jsonrpc"`
-	ID      int64       `json:"id"`
-	Method  string      `json:"method"`
-	Params  interface{} `json:"params"`
+	JSONRPC string `json:"jsonrpc"`
+	ID      int64  `json:"id"`
+	Method  string `json:"method"`
+	Params  any    `json:"params"`
 }
 
 type rpcBlock struct {
