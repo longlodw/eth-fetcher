@@ -108,6 +108,7 @@ func parallelFetcher(ctx context.Context, analyzer *Analyzer, start, end uint64,
 			if r.BlockNum == lastWritten {
 				writer.Write([]string{
 					fmt.Sprintf("%d", r.BlockNum),
+					r.TimeStamp.Format(time.RFC3339),
 					r.GasUsed.String(),
 					r.Tips.String(),
 				})
